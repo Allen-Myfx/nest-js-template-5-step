@@ -56,6 +56,7 @@ export class UserService {
     }
     const salt = makeSalt(); // 制作密码盐
     const hashPwd = encryptPassword(password, salt);  // 加密密码
+    // const salt = '';
     const registerSQL = `
       INSERT INTO admin_user
         (account_name, real_name, passwd, passwd_salt, mobile, user_status, role, create_by)
