@@ -1,20 +1,26 @@
 // src/logical/user/user.controller.ts
-
 import { Controller, Post, Body, UseGuards, UsePipes } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from '../auth/auth.service';
 import { UserService } from './user.service';
 import { ValidationPipe } from '../../pipe/validation.pipe';
-import { RegisterInfoDTO } from './user.dto'; // 引入 DTO
+import { LoginDTO, RegisterInfoDTO } from './user.dto';
+import { ApiTags, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 
+@ApiBearerAuth() // Swagger 的 JWT 验证
+@ApiTags('user')
 @Controller('user')
 export class UserController {
   constructor(private readonly authService: AuthService, private readonly usersService: UserService) {}
 
-  // JWT验证 - Step 1: 用户请求登录
+  // JWT 验证 - Step 1: 用户请求登录
   @Post('login')
-  async login(@Body() loginParmas: any) {
-    console.log('JWT验证 - Step 1: 用户请求登录');
+  @ApiBody({
+    description: '用户登录',
+    type: LoginDTO,
+  })
+  async login(@Body() loginParmas: LoginDTO) {
+    // console.log('JWT验证 - Step 1: 用户请求登录');
     const authResult = await this.authService.validateUser(loginParmas.username, loginParmas.password);
     switch (authResult.code) {
       case 1:
@@ -33,9 +39,9 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @UsePipes(new ValidationPipe()) // 使用管道验证
+  @UsePipes(new ValidationPipe())
   @Post('register')
-  async register(@Body() body: RegisterInfoDTO) { // 指定 DTO类型
+  async register(@Body() body: RegisterInfoDTO) {
     return await this.usersService.register(body);
   }
 }
